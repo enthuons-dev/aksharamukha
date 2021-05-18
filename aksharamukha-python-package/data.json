@@ -1,0 +1,15 @@
+{
+
+  "source":"IAST",
+
+  "target":"Devanagari",
+
+  "fileDocx": "test_roman_IAST_to_devanagari_input.docx",
+
+  "nativize": true ,
+
+  "preOptions": [],
+
+  "postOptions":[]
+
+}

@@ -1,10 +1,13 @@
 import re
+import os
+from zipfile import ZipFile
+import xml.etree.ElementTree as ET
 from . import Convert,PostOptions,PostProcess,PreProcess
 from . import ConvertFix
-import json
 import requests
 import html
 import itertools
+import json
 from collections import Counter
 import unicodedata
 import io
@@ -261,6 +264,71 @@ def process(src, tgt, txt, nativize = True, post_options = [], pre_options = [])
         pre_options = detect_preoptions(txt, src)
 
     return convert(src, tgt, txt, nativize, pre_options, post_options)
+
+
+def convert_docx(src, tgt, txt, nativize, pre_options, post_options):
+
+    # ZipFile(r'C:\Users\ubaid\PycharmProjects\test_roman_IAST_to_devanagari_input.docx').extractall(".")
+
+    ZipFile(txt).extractall(".")
+    xml_files_to_convert = os.listdir("./word")
+
+    tree = ET.parse(r'word\document.xml')
+
+    tree_header = ET.parse(r'word\header1.xml')
+
+    tree_foot = ET.parse(r'word\footer1.xml')
+
+    root = tree.getroot()
+
+    root_header = tree_header.getroot()
+
+    root_foot = tree_foot.getroot()
+    
+
+    for data in root_header.iter():
+        if data.text:
+            data.text = convert(src, tgt, data.text, nativize, post_options, pre_options)
+
+    tree_header.write(r'word\header1.xml')
+
+    for data in root.iter():
+
+        if data.text:
+            data.text = convert(src, tgt, data.text, nativize, post_options, pre_options)
+
+    tree.write(r'word\document.xml')
+
+    for data in root_foot.iter():
+
+        if data.text:
+            data.text = convert(src, tgt, data.text, nativize, post_options, pre_options)
+
+    tree_foot.write(r'word\footer1.xml')
+
+    file_paths = ["./[Content_Types].xml",
+                  "./_rels/.rels",
+                  "./docProps/app.xml",
+                  "./docProps/core.xml",
+                  "./word/document.xml",
+                  "./word/header1.xml",
+                  "./word/numbering.xml",
+                  "./word/footer1.xml",
+                  "./word/styles.xml",
+                  "./word/settings.xml",
+                  "./word/fontTable.xml",
+                  "./word/_rels/document.xml.rels"]
+
+    # printing the list of all files to be zipped
+    print('Following files will be zipped:')
+    for file_name in file_paths:
+        print(file_name)
+
+    # writing files to a zipfile
+    with ZipFile('enthuons.docx', 'w') as zip:
+        # writing each file one by one
+        for file in file_paths:
+            zip.write(file)
 
 
 
